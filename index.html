@@ -1,0 +1,479 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#ffffff">
+<title>Птичий квиз</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#fff;--fg:#1d1d1f;--muted:#8a8070;--line:#e4ddcf;--beige:#f1e8d8;--beige-dark:#e6dac4;--gold:#8a6a1f;--err:#a8432e;--r:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+html,body{margin:0;background:var(--bg);color:var(--fg);font:19px/1.45 "Lora",Georgia,serif}
+#app{position:relative;z-index:1;min-height:100dvh;display:flex;flex-direction:column;max-width:480px;margin:0 auto;
+  padding:calc(env(safe-area-inset-top) + 6px) 20px calc(env(safe-area-inset-bottom) + 16px)}
+.top{display:grid;grid-template-columns:40px 1fr 40px;align-items:center;gap:8px;height:56px}
+.brand{text-align:center;font-size:15px;font-style:italic;color:var(--muted)}
+.back{width:40px;height:40px;padding:0 0 2px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--fg);font:20px/1 "Lora",Georgia,serif;display:flex;align-items:center;justify-content:center}
+.dot{width:40px;height:40px;display:flex;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
+.dot::after{content:"";width:5px;height:5px;border-radius:50%;background:#ece6da}
+.screen{flex:1;display:flex;flex-direction:column;gap:16px}
+.screen form{display:flex;flex-direction:column;gap:12px}
+.text{font-size:19px;white-space:pre-wrap}
+.title{font-size:32px;font-weight:700;margin:0}
+.q{font-size:24px;font-weight:600;margin-top:14px}
+.hero{display:block;height:24dvh;width:auto;align-self:center;margin:4px 0}
+.q.center{text-align:center}
+.text,.title,.q,.msg{padding:0 2.5%}
+.pic{display:block;width:95vw;max-width:460px;align-self:center;flex-shrink:0;max-height:60dvh;object-fit:contain}
+.play{align-self:center;width:min(68vw,280px);aspect-ratio:1;flex-shrink:0;border-radius:50%;border:2px solid var(--fg);background:#fff;color:var(--fg);margin:0;
+  display:flex;align-items:center;justify-content:center;padding:0}
+.play svg{width:38%;height:38%;fill:currentColor}
+.play.on{background:var(--beige)}
+.spacer{flex:1}
+.ans{width:100%;font:19px "Lora",Georgia,serif;padding:15px 16px;border:1px solid var(--line);border-radius:var(--r);background:#fff;color:var(--fg);outline:none}
+.ans:focus{border-color:#c9b48a}
+.btn{display:block;width:100%;text-align:center;font:600 19px "Lora",Georgia,serif;padding:16px;border:0;border-radius:var(--r);background:var(--beige);color:var(--fg)}
+.btn:active{background:var(--beige-dark)}
+.btn.ghost{background:#fff;border:1px solid var(--line)}
+.btn.danger{background:#fff;color:var(--err);border:1px solid var(--err)}
+.msg{min-height:26px;font-size:18px}
+.msg.err{color:var(--err)}
+.msg.ok{color:var(--gold);font-weight:600;text-align:center}
+.shake{animation:sh .3s}
+@keyframes sh{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.name{font-size:34px;font-weight:700;text-align:center}
+.check{height:1em;width:auto;vertical-align:-0.12em;margin-right:.3em}
+.photo{width:100%;max-height:58dvh;object-fit:cover;border-radius:var(--r)}
+.photo-wrap{position:relative}
+.photo-wrap.loading .photo{filter:brightness(.6)}
+.spin{position:absolute;inset:0;margin:auto;width:56px;height:56px;border:5px solid rgba(255,255,255,.45);border-top-color:#fff;border-radius:50%;animation:rot .9s linear infinite}
+@keyframes rot{to{transform:rotate(360deg)}}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.final{font-size:36px;text-align:center;margin:0}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:2}
+#bokeh{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#bokeh i{position:absolute;border-radius:50%;transform:translate(-50%,-50%);filter:blur(8px);
+  background:radial-gradient(circle,rgba(255,200,70,.85),rgba(255,200,70,0) 70%);animation:drift 9s ease-in-out infinite alternate}
+@keyframes drift{to{transform:translate(-50%,-50%) translate(12px,-16px)}}
+.code{font-size:32px;letter-spacing:14px;text-align:center}
+.list{display:flex;flex-direction:column;gap:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:8px}
+.card.off{opacity:.45}
+.row{display:flex;gap:6px;align-items:center}
+.grow{flex:1}
+.num{font-weight:700;color:var(--muted);min-width:24px}
+.tag{font-size:14px;color:var(--muted)}
+.card select,.card textarea{width:100%;font:16px "Lora",Georgia,serif;padding:10px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--fg)}
+.card textarea{min-height:46px;resize:vertical}
+.ib{min-width:38px;height:38px;border:0;border-radius:10px;background:var(--beige);font-size:16px;color:var(--fg);padding:0 8px}
+.adds{display:flex;gap:8px}
+.adds .btn{font-size:16px;padding:12px 4px}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="bokeh" hidden></div>
+<canvas id="confetti"></canvas>
+<script>document.write('<script src="scenario.js?' + Date.now() + '"><\/script>');</script>
+<script>
+const Q = window.QUIZ, D = Q.defaults;
+const LS_STEPS = "quiz.steps", LS_PROG = "quiz.progress";
+const BASE_SIG = JSON.stringify(Q.steps);
+const app = document.getElementById("app");
+const $ = sel => app.querySelector(sel);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+// только кириллица: латинские теги и атрибуты в HTML не задеваются
+function nbsp(s) {
+  for (let i = 0; i < 2; i++) s = s.replace(/(^|[\s>(«„"])([а-яё]{1,2}|для|без|под|над|про|при)\s+/gi, "$1$2\u00A0");
+  return s.replace(/ +—/g, "\u00A0—");
+}
+const norm = s => String(s).toLowerCase().replace(/ё/g, "е").replace(/[^a-zа-я0-9]+/g, " ").trim();
+const PLAY = "\u25B6\uFE0E";
+// треугольник отцентрован по центру тяжести (x = 12), а не по габаритам — так он выглядит ровно по центру круга
+const ICON_PLAY = '<svg viewBox="0 0 24 24"><path d="M8 4.5 20 12 8 19.5z"/></svg>';
+const ICON_PAUSE = '<svg viewBox="0 0 24 24"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>';
+
+// ---------- состояние ----------
+function loadSteps() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(LS_STEPS));
+    if (saved && saved.sig === BASE_SIG) return saved.steps;
+  } catch (e) {}
+  return Q.steps.map((s, i) => ({ id: "s" + i, on: true, ...s }));
+}
+let steps = loadSteps();
+const saveSteps = () => localStorage.setItem(LS_STEPS, JSON.stringify({ sig: BASE_SIG, steps }));
+
+let prog;
+try { prog = JSON.parse(localStorage.getItem(LS_PROG)); } catch (e) {}
+prog = prog || { id: null, solved: {} };
+const saveProg = () => localStorage.setItem(LS_PROG, JSON.stringify(prog));
+
+let ui = {}; // состояние текущего экрана: mode, wrong, msg, photo
+
+const active = () => steps.filter(s => s.on);
+function curIndex() {
+  const a = active();
+  if (prog.id === "final") return a.length;
+  return Math.max(0, a.findIndex(s => s.id === prog.id));
+}
+function go(i) {
+  stopAudio();
+  const a = active();
+  prog.id = i >= a.length ? "final" : a[Math.max(0, i)].id;
+  saveProg();
+  ui = {};
+  render();
+  scrollTo(0, 0);
+}
+
+// ---------- звук: отрезок [start, end] по кругу с паузой ----------
+const audio = new Audio();
+audio.preload = "auto";
+let seg = null, curSrc = "", playing = false, waiting = false, loopT = null;
+
+function stopAudio() {
+  playing = false; waiting = false;
+  clearTimeout(loopT);
+  audio.pause();
+}
+function segEnd() {
+  if (!playing || waiting) return;
+  waiting = true;
+  audio.pause();
+  loopT = setTimeout(() => {
+    waiting = false;
+    if (playing) { audio.currentTime = seg[1] || 0; audio.play().catch(() => {}); }
+  }, (D.soundGap ?? 2) * 1000);
+}
+audio.addEventListener("timeupdate", () => { if (seg && audio.currentTime >= (seg[2] || Infinity)) segEnd(); });
+audio.addEventListener("ended", segEnd);
+audio.addEventListener("error", () => { if (playing) { stopAudio(); syncPlay(); showMsg("Звук не найден", "err"); } });
+
+function toggleAudio() {
+  if (playing) stopAudio();
+  else {
+    playing = true; waiting = false;
+    if (curSrc !== seg[0]) {
+      curSrc = seg[0];
+      audio.src = seg[0];
+      audio.addEventListener("loadedmetadata", () => { audio.currentTime = seg[1] || 0; }, { once: true });
+    } else audio.currentTime = seg[1] || 0;
+    audio.play().catch(() => { stopAudio(); syncPlay(); });
+  }
+  syncPlay();
+}
+function syncPlay() {
+  const p = $("#play");
+  if (!p) return;
+  p.classList.toggle("on", playing);
+  p.innerHTML = playing ? ICON_PAUSE : ICON_PLAY;
+}
+
+const bokeh = document.getElementById("bokeh");
+function setBokeh(on) {
+  if (on && !bokeh.childElementCount) {
+    for (let i = 0; i < 14; i++) {
+      const d = document.createElement("i"), size = 40 + Math.random() * 130;
+      d.style.cssText = `width:${size}px;height:${size}px;left:${Math.random() * 100}%;top:${Math.random() * 100}%;` +
+        `opacity:${0.25 + Math.random() * 0.45};animation-delay:${-Math.random() * 9}s`;
+      bokeh.appendChild(d);
+    }
+  }
+  bokeh.hidden = !on;
+}
+
+// ---------- экраны квиза ----------
+function shell(inner) {
+  const i = curIndex();
+  app.innerHTML = `<div class="top">${i > 0 ? '<button class="back" id="back">←</button>' : "<span></span>"}
+    <div class="brand">${esc(Q.brand || "")}</div><div class="dot" id="dot"></div></div>
+    <div class="screen">${nbsp(inner)}</div>`;
+  const b = $("#back");
+  if (b) b.onclick = () => go(i - 1);
+  bindLongPress($("#dot"), askCode);
+}
+function showMsg(text, type) {
+  const m = $("#msg");
+  if (!m) return;
+  m.textContent = nbsp(text);
+  m.className = "msg " + type;
+  m.classList.remove("shake"); void m.offsetWidth; m.classList.add("shake");
+}
+
+function render() {
+  const a = active(), i = curIndex();
+  history.replaceState(null, "", "#" + (i + 1));
+  setBokeh(i >= a.length || a[i].type !== "bird");
+  if (i >= a.length) return renderFinal();
+  const s = a[i];
+  ({ text: renderText, photo: renderPhoto, bird: renderBird })[s.type](s);
+}
+
+function renderText(s) {
+  shell(`${s.image ? `<img class="hero" src="${esc(s.image)}" alt="" onerror="this.remove()">` : ""}
+    ${s.title ? `<h1 class="title">${esc(s.title)}</h1>` : ""}
+    <div class="text">${esc(s.text)}</div><div class="spacer"></div>
+    <button class="btn" id="next">${esc(s.button || "Дальше")}</button>`);
+  $("#next").onclick = () => go(curIndex() + 1);
+}
+
+function renderPhoto(s) {
+  shell(`<div class="text">${esc(s.text)}</div>
+    ${ui.photo ? `<img class="photo" src="${ui.photo}" alt="">` : ""}
+    <div class="spacer"></div>
+    <label class="btn ghost">${ui.photo ? "Переснять" : "Сделать фото"}<input class="vh" type="file" accept="image/*" capture="environment" id="cam"></label>
+    <button class="btn" id="next">Дальше</button>`);
+  $("#cam").onchange = e => {
+    const f = e.target.files[0];
+    if (f) { ui.photo = URL.createObjectURL(f); render(); }
+  };
+  $("#next").onclick = () => go(curIndex() + 1);
+}
+
+const isRight = (b, v) => b.answers.some(a => norm(a) === v) || (b.keys || []).some(k => v.includes(norm(k)));
+function wrongMsg(b, v) {
+  for (const [k, m] of Object.entries(b.wrong || {})) if (v.includes(norm(k))) return m;
+  return D.wrong;
+}
+function defaultQuestion(b) {
+  return b.sound ? D.soundQuestion : b.riddle ? "Загадка" : D.rebusQuestion;
+}
+
+function renderBird(s) {
+  const b = Q.birds[s.bird];
+  if (!b) return shell(`<div class="text">Птица «${esc(s.bird)}» не найдена в scenario.js</div>`);
+  if (!ui.mode) ui.mode = prog.solved[s.id] ? "done" : "ask";
+
+  if (ui.mode === "done") {
+    const where = (s.where || "").trim();
+    shell(`<img class="pic" src="${esc(b.image)}" alt=""><div class="name"><img class="check" src="assets/check.png" alt="">${esc(b.name)}</div>
+      ${b.right ? `<div class="msg ok">${esc(b.right)}</div>` : ""}
+      ${where ? `<div class="text">${esc(where)}</div>` : ""}
+      <div class="spacer"></div>
+      ${where
+        ? `<label class="btn">${esc(D.foundButton)}<input class="vh" type="file" accept="image/*" capture="environment" id="cam"></label>`
+        : `<button class="btn" id="next">Дальше</button>`}`);
+    if (!where) { $("#next").onclick = () => go(curIndex() + 1); return; }
+    $("#cam").onchange = e => {
+      const f = e.target.files[0];
+      if (!f) return;
+      const cur = ui = { mode: "found", photo: URL.createObjectURL(f) };
+      render();
+      setTimeout(() => { if (ui === cur) { ui.mode = "praise"; render(); } }, 1800);
+    };
+    return;
+  }
+
+  if (ui.mode === "found" || ui.mode === "praise") {
+    const done = ui.mode === "praise";
+    shell(`<div class="photo-wrap${done ? "" : " loading"}"><img class="photo" src="${ui.photo}" alt="">${done ? "" : '<div class="spin"></div>'}</div>
+      ${done
+        ? `<div class="name">${esc([].concat(D.praise)[curIndex() % [].concat(D.praise).length])}</div><div class="spacer"></div><button class="btn" id="next">${esc(D.nextButton)}</button>`
+        : `<div class="tag" style="text-align:center">${esc(D.uploading)}</div>`}`);
+    if (done) $("#next").onclick = () => go(curIndex() + 1);
+    return;
+  }
+
+  let body;
+  if (ui.mode === "hint") body = `<div class="q">${esc(D.hintQuestion)}</div><img class="pic" src="${esc(b.image)}" alt="">`;
+  else {
+    const q = `<div class="q">${esc(s.question || defaultQuestion(b))}</div>`;
+    if (b.sound) {
+      seg = b.sound;
+      body = `<div class="q center">${esc(s.question || defaultQuestion(b))}</div><div class="spacer"></div><button class="play" id="play"></button>`;
+    }
+    else if (b.riddle) body = q + `<div class="text">${esc(b.riddle)}</div>`;
+    else body = q + `<img class="pic" src="${esc(b.rebus)}" alt="">`;
+  }
+  shell(`${body}<div class="spacer"></div>
+    <div class="msg" id="msg"></div>
+    <form id="f">
+      <input class="ans" id="ans" placeholder="Ваш ответ" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
+      <button class="btn">Ответить</button>
+    </form>
+    ${ui.mode === "ask" ? `<button class="btn ghost" id="hint" ${ui.wrong ? "" : "hidden"}>${esc(D.hintButton)}</button>` : ""}`);
+  syncPlay();
+
+  const p = $("#play");
+  if (p) p.onclick = toggleAudio;
+  const h = $("#hint");
+  if (h) h.onclick = () => { stopAudio(); ui = { mode: "hint", wrong: ui.wrong }; render(); };
+  $("#f").onsubmit = e => {
+    e.preventDefault();
+    const inp = $("#ans"), v = norm(inp.value);
+    if (!v) return;
+    if (isRight(b, v)) {
+      stopAudio();
+      prog.solved[s.id] = true; saveProg();
+      ui = { mode: "done" };
+      render();
+      return;
+    }
+    ui.wrong = (ui.wrong || 0) + 1;
+    showMsg(wrongMsg(b, v), "err");
+    if (h) h.hidden = false;
+    inp.select();
+  };
+}
+
+function renderFinal() {
+  shell(`<div class="spacer"></div><h1 class="final">${esc(Q.final.title)}</h1>
+    <div class="text" style="text-align:center">${esc(Q.final.text)}</div><div class="spacer"></div>`);
+  confetti();
+}
+
+function confetti() {
+  const c = document.getElementById("confetti"), x = c.getContext("2d"), k = devicePixelRatio || 1;
+  const W = c.width = innerWidth * k, H = c.height = innerHeight * k;
+  c.style.width = innerWidth + "px"; c.style.height = innerHeight + "px";
+  const cols = ["#f2c14e", "#e0a43a", "#f6dd8f", "#d98f3a", "#c9b48a"];
+  const ps = Array.from({ length: 160 }, () => ({
+    x: Math.random() * W, y: -Math.random() * H * 0.6, vx: (Math.random() - 0.5) * 3 * k, vy: (2 + Math.random() * 4) * k,
+    s: (5 + Math.random() * 6) * k, r: Math.random() * 6, c: cols[(Math.random() * cols.length) | 0],
+  }));
+  const t0 = performance.now();
+  (function frame(t) {
+    x.clearRect(0, 0, W, H);
+    if (t - t0 > 6000) return;
+    for (const p of ps) {
+      p.x += p.vx; p.y += p.vy; p.r += 0.1;
+      x.save(); x.translate(p.x, p.y); x.rotate(p.r); x.fillStyle = p.c; x.fillRect(-p.s / 2, -p.s / 4, p.s, p.s / 2); x.restore();
+    }
+    requestAnimationFrame(frame);
+  })(t0);
+}
+
+// ---------- вход в редактор ----------
+function bindLongPress(el, fn) {
+  let t;
+  const start = e => { e.preventDefault(); t = setTimeout(fn, 1500); };
+  const end = () => clearTimeout(t);
+  el.addEventListener("touchstart", start, { passive: false });
+  el.addEventListener("mousedown", start);
+  ["touchend", "touchcancel", "mouseup", "mouseleave"].forEach(ev => el.addEventListener(ev, end));
+}
+
+function askCode() {
+  stopAudio();
+  setBokeh(false);
+  app.innerHTML = `<div class="top"><button class="back" id="back">←</button></div>
+    <div class="screen"><div class="q">Код редактора</div>
+    <input class="ans code" id="code" inputmode="numeric" maxlength="4" autocomplete="off"><div class="msg err" id="msg"></div></div>`;
+  $("#back").onclick = () => { ui = {}; render(); };
+  const c = $("#code");
+  c.focus();
+  c.oninput = () => {
+    if (c.value.length < 4) return;
+    if (c.value === Q.adminCode) renderEditor();
+    else { showMsg("Неверный код", "err"); c.value = ""; }
+  };
+}
+
+// ---------- редактор сценария ----------
+const TYPES = { bird: "Птица", text: "Текст", photo: "Фото" };
+
+function birdOptions(id) {
+  return Object.entries(Q.birds).map(([k, b]) =>
+    `<option value="${k}"${k === id ? " selected" : ""}>${esc(b.name)}${b.riddle ? " (загадка)" : b.rebus ? " (ребус)" : ""}</option>`).join("");
+}
+function card(s, i) {
+  const field = s.type === "bird"
+    ? `<select data-k="bird">${birdOptions(s.bird)}</select>
+       <textarea data-k="question" rows="1" placeholder="Вопрос: ${esc(Q.birds[s.bird] ? defaultQuestion(Q.birds[s.bird]) : "")}">${esc(s.question || "")}</textarea>
+       <textarea data-k="where" rows="2" placeholder="Где искать (после отгадки)">${esc(s.where || "")}</textarea>`
+    : `<textarea data-k="text" rows="3" placeholder="${s.type === "photo" ? "Задание для фото" : "Текст"}">${esc(s.text || "")}</textarea>`;
+  return `<div class="card${s.on ? "" : " off"}" data-i="${i}">
+    <div class="row"><span class="num">${i + 1}</span>
+      <span class="tag grow">${TYPES[s.type]}${s.id === prog.id ? " · сейчас здесь" : ""}${prog.solved[s.id] ? " · пройден" : ""}</span>
+      <button class="ib" data-act="up">↑</button><button class="ib" data-act="down">↓</button>
+      <button class="ib" data-act="on">${s.on ? "Вкл" : "Выкл"}</button>
+      <button class="ib" data-act="go">${PLAY}</button><button class="ib" data-act="del">✕</button>
+    </div>${field}</div>`;
+}
+
+function renderEditor() {
+  setBokeh(false);
+  app.innerHTML = `<div class="top"><button class="back" id="back">←</button><span class="tag">Редактор сценария</span><span></span></div>
+    <div class="screen">
+      <div class="tag">${PLAY} — перейти в квизе к этому шагу. Выключенные шаги пропускаются.</div>
+      <div class="list">${steps.map(card).join("")}</div>
+      <div class="adds"><button class="btn ghost" data-add="bird">+ Птица</button><button class="btn ghost" data-add="text">+ Текст</button><button class="btn ghost" data-add="photo">+ Фото</button></div>
+      <button class="btn ghost" id="export">Скопировать сценарий</button>
+      <button class="btn ghost" id="restart">Начать квиз заново</button>
+      <button class="btn danger" id="reset">Вернуть исходный сценарий</button>
+      <button class="btn" id="close">Вернуться в квиз</button>
+    </div>`;
+  const close = () => { ui = {}; render(); scrollTo(0, 0); };
+  $("#back").onclick = $("#close").onclick = close;
+
+  const list = $(".list");
+  list.onclick = e => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const i = +btn.closest(".card").dataset.i, s = steps[i], act = btn.dataset.act;
+    if (act === "up" && i > 0) [steps[i - 1], steps[i]] = [steps[i], steps[i - 1]];
+    else if (act === "down" && i < steps.length - 1) [steps[i + 1], steps[i]] = [steps[i], steps[i + 1]];
+    else if (act === "on") s.on = !s.on;
+    else if (act === "go") { s.on = true; saveSteps(); prog.id = s.id; saveProg(); return close(); }
+    else if (act === "del") { if (!confirm("Удалить шаг?")) return; steps.splice(i, 1); }
+    else return;
+    saveSteps();
+    renderEditor();
+  };
+  list.oninput = list.onchange = e => {
+    const el = e.target.closest("[data-k]");
+    if (!el) return;
+    steps[+el.closest(".card").dataset.i][el.dataset.k] = el.value;
+    saveSteps();
+  };
+
+  app.querySelectorAll("[data-add]").forEach(btn => btn.onclick = () => {
+    const type = btn.dataset.add;
+    steps.push({ id: "n" + Date.now(), on: true, type, ...(type === "bird" ? { bird: Object.keys(Q.birds)[0] } : { text: "" }) });
+    saveSteps();
+    renderEditor();
+    scrollTo(0, document.body.scrollHeight);
+  });
+  $("#export").onclick = async () => {
+    const text = JSON.stringify(steps, null, 1);
+    try {
+      await navigator.clipboard.writeText(text);
+      alert("Сценарий скопирован. Вставьте его в сообщение.");
+    } catch (e) {
+      const t = document.createElement("textarea");
+      t.value = text;
+      t.style.cssText = "width:100%;height:200px;font-size:12px";
+      $("#export").after(t);
+      t.select();
+    }
+  };
+  $("#restart").onclick = () => {
+    if (!confirm("Сбросить прогресс и начать квиз с первого шага?")) return;
+    prog = { id: null, solved: {} }; saveProg();
+    close();
+  };
+  $("#reset").onclick = () => {
+    if (!confirm("Отменить все правки сценария?")) return;
+    localStorage.removeItem(LS_STEPS);
+    steps = loadSteps();
+    renderEditor();
+  };
+}
+
+const hashStep = () => parseInt(location.hash.slice(1), 10);
+if (hashStep() >= 1) {
+  const a = active();
+  prog.id = hashStep() > a.length ? "final" : a[hashStep() - 1].id;
+  saveProg();
+}
+addEventListener("hashchange", () => { if (hashStep() >= 1 && hashStep() - 1 !== curIndex()) go(hashStep() - 1); });
+render();
+</script>
+</body>
+</html>
