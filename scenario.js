@@ -8,6 +8,7 @@ window.QUIZ = {
     wrong: "Не угадали. Попробуйте ещё раз!",
     right: "Верно!",
     hintButton: "Подсказка",
+    hintMoreButton: "Ещё подсказка", // у птиц со звуком и ребусом: звук → картинка → ребус
     soundQuestion: "Чей это голос?",
     rebusQuestion: "Разгадайте ребус: кто это?",
     hintQuestion: "Подсказка: кто на картинке?",
@@ -30,7 +31,7 @@ window.QUIZ = {
     golub:       { name: "Голубь",     image: "assets/golub.png",       sound: ["assets/sounds/golub.m4a"],      answers: ["голубь", "голубка", "сизый голубь"], keys: ["голуб"] },
     dyatel:      { name: "Дятел",      image: "assets/dyatel.png",      sound: ["assets/sounds/dyatel.m4a"],     answers: ["дятел"], keys: ["дятел", "дятл"] },
     drozd:       { name: "Дрозд",      image: "assets/drozd.png",       sound: ["assets/sounds/drozd.m4a"],      answers: ["дрозд", "певчий дрозд"], keys: ["дрозд"] },
-    zhavoronok:  { name: "Жаворонок",  image: "assets/zhavoronok.png",  sound: ["assets/sounds/zhavoronok.m4a"], answers: ["жаворонок"], keys: ["жаворон"] },
+    zhavoronok:  { name: "Жаворонок",  image: "assets/zhavoronok.png",  sound: ["assets/sounds/zhavoronok.m4a"], rebus: "assets/rebus_zhavoronok.jpg", answers: ["жаворонок"], keys: ["жаворон"] },
     tryasoguzka: { name: "Трясогузка", image: "assets/tryasoguzka.png",
       riddle: "Эта птица — настоящий фитнес-блогер: она без остановки «качает попу», даже когда просто стоит на месте. Учёные до сих пор спорят, зачем ей это нужно: чтобы пугать насекомых в траве, держать баланс при резкой остановке или сигнализировать хищникам, что она в отличной форме. Носит строгий чёрно-белый «костюм» и предпочитает бегать за добычей пешком, а не гоняться за ней в небе. Кто это?",
       answers: ["трясогузка"], keys: ["трясогуз"] },

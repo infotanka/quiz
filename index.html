@@ -281,7 +281,9 @@ function renderBird(s) {
   }
 
   let body;
+  const moreHint = ui.mode === "hint" && b.sound && b.rebus;
   if (ui.mode === "hint") body = `<div class="q">${esc(D.hintQuestion)}</div><img class="pic" src="${esc(b.image)}" alt="">`;
+  else if (ui.mode === "rebus") body = `<div class="q">${esc(D.rebusQuestion)}</div><img class="pic" src="${esc(b.rebus)}" alt="">`;
   else {
     const q = `<div class="q">${esc(s.question || defaultQuestion(b))}</div>`;
     if (b.sound) {
@@ -297,13 +299,15 @@ function renderBird(s) {
       <input class="ans" id="ans" placeholder="Ваш ответ" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
       <button class="btn">Ответить</button>
     </form>
-    ${ui.mode === "ask" ? `<button class="btn ghost" id="hint" ${ui.wrong ? "" : "hidden"}>${esc(D.hintButton)}</button>` : ""}`);
+    ${ui.mode === "ask" || moreHint
+      ? `<button class="btn ghost" id="hint" ${ui.wrong ? "" : "hidden"}>${esc(moreHint ? D.hintMoreButton || "Ещё подсказка" : D.hintButton)}</button>`
+      : ""}`);
   syncPlay();
 
   const p = $("#play");
   if (p) p.onclick = toggleAudio;
   const h = $("#hint");
-  if (h) h.onclick = () => { stopAudio(); ui = { mode: "hint", wrong: ui.wrong }; render(); };
+  if (h) h.onclick = () => { stopAudio(); ui = { mode: ui.mode === "ask" ? "hint" : "rebus", wrong: 0 }; render(); };
   $("#f").onsubmit = e => {
     e.preventDefault();
     const inp = $("#ans"), v = norm(inp.value);
