@@ -280,34 +280,34 @@ function renderBird(s) {
     return;
   }
 
+  // stage 0 — основное задание, дальше подсказки по порядку из b.hints
+  const chain = [b.sound ? "sound" : b.riddle ? "riddle" : "rebus", ...(b.hints || ["image"])];
+  const stage = ui.stage || 0, kind = chain[stage];
+  const q = text => `<div class="q">${esc(text)}</div>`;
   let body;
-  const moreHint = ui.mode === "hint" && b.sound && b.rebus;
-  if (ui.mode === "hint") body = `<div class="q">${esc(D.hintQuestion)}</div><img class="pic" src="${esc(b.image)}" alt="">`;
-  else if (ui.mode === "rebus") body = `<div class="q">${esc(D.rebusQuestion)}</div><img class="pic" src="${esc(b.rebus)}" alt="">`;
-  else {
-    const q = `<div class="q">${esc(s.question || defaultQuestion(b))}</div>`;
-    if (b.sound) {
-      seg = b.sound;
-      body = `<div class="q center">${esc(s.question || defaultQuestion(b))}</div><div class="spacer"></div><button class="play" id="play"></button>`;
-    }
-    else if (b.riddle) body = q + `<div class="text">${esc(b.riddle)}</div>`;
-    else body = q + `<img class="pic" src="${esc(b.rebus)}" alt="">`;
+  if (kind === "sound") {
+    seg = b.sound;
+    body = `<div class="q center">${esc(s.question || D.soundQuestion)}</div><div class="spacer"></div><button class="play" id="play"></button>`;
   }
+  else if (kind === "riddle") body = q(stage ? D.riddleQuestion || "Загадка" : s.question || "Загадка") + `<div class="text">${esc(b.riddle)}</div>`;
+  else if (kind === "rebus") body = q(stage ? D.rebusQuestion : s.question || D.rebusQuestion) + `<img class="pic" src="${esc(b.rebus)}" alt="">`;
+  else body = q(D.hintQuestion) + `<img class="pic" src="${esc(b.image)}" alt="">`;
+  const hasNext = stage < chain.length - 1;
   shell(`${body}<div class="spacer"></div>
     <div class="msg" id="msg"></div>
     <form id="f">
       <input class="ans" id="ans" placeholder="Ваш ответ" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done">
       <button class="btn">Ответить</button>
     </form>
-    ${ui.mode === "ask" || moreHint
-      ? `<button class="btn ghost" id="hint" ${ui.wrong ? "" : "hidden"}>${esc(moreHint ? D.hintMoreButton || "Ещё подсказка" : D.hintButton)}</button>`
+    ${hasNext
+      ? `<button class="btn ghost" id="hint" ${ui.wrong ? "" : "hidden"}>${esc(stage ? D.hintMoreButton || "Ещё подсказка" : D.hintButton)}</button>`
       : ""}`);
   syncPlay();
 
   const p = $("#play");
   if (p) p.onclick = toggleAudio;
   const h = $("#hint");
-  if (h) h.onclick = () => { stopAudio(); ui = { mode: ui.mode === "ask" ? "hint" : "rebus", wrong: 0 }; render(); };
+  if (h) h.onclick = () => { stopAudio(); ui = { mode: "ask", stage: stage + 1, wrong: 0 }; render(); };
   $("#f").onsubmit = e => {
     e.preventDefault();
     const inp = $("#ans"), v = norm(inp.value);
